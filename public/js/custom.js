@@ -1,19 +1,27 @@
 $(document).ready(function() {
-    var flag = true;
+    var flagMail = true;
+    var flagName = true;
+    var flagMessage = true;
     var reEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     var reName = /^[A-Za-z\s]{3,}$/;
     var reMsg = /^[A-Za-z\s0-9]{3,}$/;
 
-    $("#email").on("blur", function() {
-        validateEmail();
+    $("#email").on("keyup", function() {
+        $(this).on("mouseleave", function() {
+            validateEmail();
+        });
     });
 
-    $("#name").on("blur", function() {
-        validateName();
+    $("#name").on("keyup", function() {
+        $(this).on("mouseleave", function() {
+            validateName();
+        });
     });
 
-    $("#message").on("blur", function() {
-        validateMessage();
+    $("#message").on("keyup", function() {
+        $(this).on("mouseleave", function() {
+            validateMessage();
+        });
     });
 
     function validateEmail() {
@@ -22,18 +30,18 @@ $(document).ready(function() {
             $("#errMail").text("Email field is required");
             $("#errMail").removeClass("d-none");
             $("#send").prop("disabled", true);
-            flag = false;
+            flagMail = false;
             //return false;
         } else if (!mail.match(reEmail)) {
             $("#errMail").text("Email field must be a valid email");
             $("#errMail").removeClass("d-none");
             $("#send").prop("disabled", true);
-            flag = false;
+            flagMail = false;
             //return false;
         } else {
             $("#errMail").addClass("d-none");
             $("#send").prop("disabled", false);
-            flag = true;
+            flagMail = true;
         }
     }
 
@@ -43,7 +51,7 @@ $(document).ready(function() {
             $("#errName").text("Name field is required");
             $("#errName").removeClass("d-none");
             $("#send").prop("disabled", true);
-            flag = false;
+            flagName = false;
             //return false;
         } else if (!name.match(reName)) {
             $("#errName").text(
@@ -51,12 +59,12 @@ $(document).ready(function() {
             );
             $("#errName").removeClass("d-none");
             $("#send").prop("disabled", true);
-            flag = false;
+            flagName = false;
             //return false;
         } else {
             $("#errName").addClass("d-none");
             $("#send").prop("disabled", false);
-            flag = true;
+            flagName = true;
         }
     }
 
@@ -66,7 +74,7 @@ $(document).ready(function() {
             $("#errMsg").text("Message field is required");
             $("#errMsg").removeClass("d-none");
             $("#send").prop("disabled", true);
-            flag = false;
+            flagMessage = false;
             //return false;
         } else if (!msg.match(reMsg)) {
             $("#errMsg").text(
@@ -74,12 +82,12 @@ $(document).ready(function() {
             );
             $("#errMsg").removeClass("d-none");
             $("#send").prop("disabled", true);
-            flag = false;
+            flagMessage = false;
             //return false;
         } else {
             $("#errMsg").addClass("d-none");
             $("#send").prop("disabled", false);
-            flag = true;
+            flagMessage = true;
         }
     }
 
@@ -88,23 +96,33 @@ $(document).ready(function() {
         validateEmail();
         validateName();
         validateMessage();
-        if (flag) {
+        if (flagMessage && flagName && flagMail) {
             var data = {
                 email: $("#email").val(),
                 name: $("#name").val(),
                 message: $("#message").val()
             };
-            console.log(data);
+
             $.ajax({
                 type: "POST",
                 url: URL + "/send",
-                data: { message: data, _token: TOKEN },
-                dataType: "application/json",
-                success: function(response) {
-                    console.log(response);
-                },
-                error: function(response) {
-                    console.log(response);
+                data: { data: data, _token: TOKEN },
+                complete: function(response) {
+                    if (response.status == 200) {
+                        var txt = JSON.parse(response.responseText);
+                        $("#feedback").html(
+                            `<div class="alert alert-success text-center">${
+                                txt.message
+                            }</div>`
+                        );
+                    } else {
+                        var txt = "";
+                        var res = JSON.parse(response.responseText);
+                        $.each(res.messages, function(key, value) {
+                            txt += `<div class="alert alert-danger text-center">${value}</div>`;
+                        });
+                        $("#feedback").html(txt);
+                    }
                 }
             });
         }
