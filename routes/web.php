@@ -12,3 +12,5 @@
 */
 
 Route::get('/', "Contact@show");
+
+Route::post('send', 'Contact@send');

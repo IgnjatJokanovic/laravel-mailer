@@ -18,6 +18,7 @@
             </div>
             <form method="post">
                 <h3>Drop Us a Message</h3>
+                <div id="feedback"></div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
